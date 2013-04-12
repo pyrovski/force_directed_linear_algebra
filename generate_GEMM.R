@@ -1,8 +1,9 @@
 #!/usr/bin/env Rscript
 
-m = 8
-n = 8
-p = 8
+m = 12
+n = 12
+p = 12
+doCache = T
 
 cat('{\n "nodes":[\n')
 for(i in 1:m)
@@ -47,6 +48,54 @@ cat(' "links":[\n')
 # row-major from a
 # row-major from b
 # row-major from c
+
+# attempt to associate by cache line size
+# group every 8 elements
+
+if(doCache){
+  for(x in seq(1, m*n, 8))
+    for(y in 0:7)
+      for(z in 0:7)
+        cat(
+          paste('  {"source":',
+# source from a
+                x-1 + y,
+                ',"target":',
+                x-1 + z,
+                ',"value":',.1,
+                '},\n',
+                sep='')
+          )
+  for(x in seq(m*n+1, m*n + n*p, 8))
+    for(y in 0:7)
+      for(z in 0:7)
+        cat(
+          paste('  {"source":',
+# source from b
+                x-1 + y,
+                ',"target":',
+                x-1 + z,
+                ',"value":',.1,
+                '},\n',
+                sep='')
+          )
+  for(x in seq(m*n + n*p + 1, m*n + n*p + m*p, 8))
+    for(y in 0:7)
+      for(z in 0:7)
+        cat(
+          paste('  {"source":',
+# source from c
+                x-1 + y,
+                ',"target":',
+                x-1 + z,
+                ',"value":',.1,
+                '},\n',
+                sep='')
+          )
+}
+
+# repel sets of elements that map to the same cache line?
+
 for(i in 1:m)
   for(k in 1:p){
 # each element of the product depends on
